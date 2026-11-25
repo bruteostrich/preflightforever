@@ -1,5 +1,11 @@
 package-as: PreflightForever
 
+# Use the hand-written changelog instead of one compiled from git commits
+# (which would include commit authors and email addresses).
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 # Everything else at the repository root ships as the addon folder.
 # Dotfiles (.gitignore, .pkgmeta, .github) are never packaged.
 ignore:
