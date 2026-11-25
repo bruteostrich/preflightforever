@@ -22,7 +22,7 @@ The repository root is the addon folder: `PreflightForever.toc`, the Lua files, 
 
 CurseForge packages the repository whenever a tag is pushed (project setting: package tagged commits). It names the folder from `package-as` in `.pkgmeta` and takes the release type from the tag: a tag containing `alpha` or `beta` is published as alpha or beta; any other tag is a release.
 
-1. Update `## Version:` in `PreflightForever.toc` and add a section for that version at the top of `CHANGELOG.md`. `.pkgmeta` points CurseForge at this file (`manual-changelog`), so it becomes the release notes; without it CurseForge compiles a changelog from commit messages, including author names and email addresses.
+1. Set the new version in `PreflightForever.toc` (`## Version:`), `Main.lua` (`ns.version`) and `package.json` (`npm version X.Y.Z --no-git-tag-version`), and add a section for it at the top of `CHANGELOG.md`; `npm test` fails if these disagree. `.pkgmeta` points CurseForge at this file (`manual-changelog`), so it becomes the release notes; without it CurseForge compiles a changelog from commit messages, including author names and email addresses.
 2. Run `npm test` and `.\scripts\Package.ps1`, and check the zip.
 3. Commit, then tag with the same version and push the commit with its tag:
 

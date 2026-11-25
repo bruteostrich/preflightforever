@@ -11,6 +11,18 @@ for (const dir of ['.', 'tests']) {
     console.log(`Lua 5.1 syntax OK: ${dir}/${name}`);
   }
 }
+// A release must carry one version everywhere: TOC, Lua, package.json and the newest changelog section.
+const versions = {
+  'PreflightForever.toc': fs.readFileSync('PreflightForever.toc', 'utf8').match(/^## Version: (.+)$/m)?.[1].trim(),
+  'Main.lua ns.version': fs.readFileSync('Main.lua', 'utf8').match(/^ns\.version = "([^"]+)"/m)?.[1],
+  'package.json': JSON.parse(fs.readFileSync('package.json', 'utf8')).version,
+  'CHANGELOG.md': fs.readFileSync('CHANGELOG.md', 'utf8').match(/^## (\S+)/m)?.[1],
+};
+if (Object.values(versions).includes(undefined) || new Set(Object.values(versions)).size !== 1) {
+  throw new Error(`Version mismatch: ${JSON.stringify(versions)}`);
+}
+console.log(`Version ${versions['PreflightForever.toc']} matches in TOC, Main.lua, package.json and CHANGELOG.md`);
+
 for (const file of ['tests/model_spec.lua', 'tests/api_spec.lua', 'tests/timings_spec.lua', 'tests/routes_spec.lua', 'tests/tracker_spec.lua', 'tests/integration_spec.lua', 'tests/ui_spec.lua']) {
   if (!fs.existsSync(file)) throw new Error(`Missing test: ${file}`);
   const state = lauxlib.luaL_newstate();

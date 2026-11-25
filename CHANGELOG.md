@@ -1,6 +1,6 @@
 # Preflight Forever changelog
 
-## 0.3.2
+## 0.3.3
 
 First release on CurseForge.
 
