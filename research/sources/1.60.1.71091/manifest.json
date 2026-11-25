@@ -1,0 +1,21 @@
+{
+  "build": "1.60.1.71091",
+  "product": "wowf",
+  "buildListedAt": "2026-11-24 15:21:07",
+  "retrieved": "2026-11-25",
+  "buildList": "https://wago.tools/api/builds",
+  "tables": {
+    "TaxiNodes": {
+      "url": "https://wago.tools/db2/TaxiNodes/csv?build=1.60.1.71091",
+      "sha256": "4360793e0edfbb8de62d12d87a69260b6a1bc6314b1e506b141c33e8802d8249"
+    },
+    "TaxiPath": {
+      "url": "https://wago.tools/db2/TaxiPath/csv?build=1.60.1.71091",
+      "sha256": "3e5c18b53621ca7cd2618447e12498874e6aba7aa7f1f6bfda9a7977979da179"
+    },
+    "TaxiPathNode": {
+      "url": "https://wago.tools/db2/TaxiPathNode/csv?build=1.60.1.71091",
+      "sha256": "b0c6a777dbd934bf299c41feda0ed0a3f4845bbf58b373115724e6c6abb585c8"
+    }
+  }
+}

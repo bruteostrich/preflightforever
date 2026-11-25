@@ -1,0 +1,4 @@
+# Keep LF line endings in every checkout: research CSVs are verified by SHA-256,
+# and the packaged addon should be byte-identical regardless of the developer's OS.
+* text=auto eol=lf
+*.png binary

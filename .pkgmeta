@@ -1,0 +1,13 @@
+package-as: PreflightForever
+
+# Everything else at the repository root ships as the addon folder.
+# Dotfiles (.gitignore, .pkgmeta, .github) are never packaged.
+ignore:
+  - tests
+  - scripts
+  - research
+  - art
+  - package.json
+  - package-lock.json
+  - DEVELOPMENT.md
+  - MANUAL_TESTS.md

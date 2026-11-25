@@ -1,0 +1,18 @@
+## Interface: 16001
+## Title: Preflight Forever
+## Notes: Plan a flight anywhere, then depart when you visit the selected flight master.
+## Author: bruteostrich
+## Version: 0.3.2
+## X-License: MIT
+## OptionalDeps: ForeverDungeonJournal
+## SavedVariablesPerCharacter: PreflightDB
+## IconTexture: Interface\Icons\Ability_Mount_Gryphon_01
+
+Model.lua
+API.lua
+Timings.lua
+RoutesData.lua
+Routes.lua
+Tracker.lua
+UI.lua
+Main.lua

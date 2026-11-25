@@ -1,0 +1,63 @@
+Preflight Forever bundled flight connections
+
+Source: Blizzard WoW Forever client tables, build 1.60.1.71091.
+Game data copyright Blizzard Entertainment. Public CSV exports via wago.tools:
+https://wago.tools/db2/TaxiNodes/csv?build=1.60.1.71091
+https://wago.tools/db2/TaxiPath/csv?build=1.60.1.71091
+https://wago.tools/db2/TaxiPathNode/csv?build=1.60.1.71091
+Retrieved: 2026-11-25. Source SHA256 hashes are embedded in RoutesData.lua
+and recorded with the CSVs in research/sources/1.60.1.71091/manifest.json.
+Generated independently by scripts/ImportTaxiData.cjs from that single build.
+
+286 ordinary directed links retain native path IDs and base costs separately
+from full 3D flown lengths. Non-discoverable class services, transport anchors,
+old named nodes and incompatible factions/maps are excluded. These facts
+establish connections; they do not expose the client's multi-hop solver.
+
+Direct-flight precedence was cross-checked against independent research:
+https://github.com/brues-code/ClassicAPI/blob/master/src/taxi/Map.cpp
+https://github.com/TrinityCore/TrinityCore/blob/master/src/server/game/Entities/Taxi/TaxiPathGraph.cpp
+Their client generations differ from Forever. No routing code was copied.
+
+Historical attribution: versions 0.3.0-0.3.1 extracted a mixed Era/Forever
+flight compilation from Polestar (https://github.com/fitzforge/polestar),
+Nav/TravelData.lua blob 09a91e426f4cecd0eb70c13cd41591769f2ff70a.
+That dataset is replaced by the current-build import above; no Polestar data
+or code is included in this release.
+
+Preflight Forever bundled flight-time data
+
+Source: InFlight, https://github.com/LudiusMaximus/InFlight
+File: Defaults.lua (global_classic and global_forever numeric durations only)
+Commit: 4b2b3baed78b13c129405330e5abbdc0c0d6b8fd
+Commit date: 2026-11-15
+Source: https://github.com/LudiusMaximus/InFlight/blob/4b2b3baed78b13c129405330e5abbdc0c0d6b8fd/Defaults.lua
+
+The extracted data combines Classic Era normal-speed timings with Forever
+corrections, matching InFlight's own Forever selection. It does not include
+post-Cataclysm, TBC or Wrath timings. Durations are estimates keyed by faction
+and taxi-node endpoints; personal measured routes take precedence in Preflight Forever.
+No InFlight addon installation is required.
+
+MIT License
+
+Copyright (c) 2009-2024 TotalPackage, 2022 Deranjata, 2025-2026 LudiusMaximus
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
