@@ -2,7 +2,7 @@ local addonName, ns = ...
 local M, A = ns.Model, ns.API
 local events = CreateFrame("Frame")
 ns.events = events
-ns.version = "0.3.4"
+ns.version = "0.3.5"
 local session = 0
 
 function ns.Print(message)
@@ -149,8 +149,8 @@ local function onEvent(_, event, arg)
         if type(ns.db.autoDepart) ~= "boolean" then ns.db.autoDepart = true end
         local savedQueue = ns.db.queue
         ns.db.queue = nil
-        if type(savedQueue) == "table" and ns.db.learned[savedQueue.sourceID] == true
-            and ns.db.learned[savedQueue.destinationID] == true then
+        -- The departure may still be undiscovered; the destination must be known.
+        if type(savedQueue) == "table" and ns.db.learned[savedQueue.destinationID] == true then
             ns.db.queue = M.NewQueue({ id = savedQueue.sourceID, name = savedQueue.sourceName },
                 { id = savedQueue.destinationID, name = savedQueue.destinationName }, savedQueue.mapID, savedQueue.createdAt)
         end

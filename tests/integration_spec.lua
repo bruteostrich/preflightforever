@@ -584,14 +584,35 @@ test("unknown destination cannot be queued even through a direct controller call
     equal(h.ns.db.queue, nil)
 end)
 
-test("without any known departure point the controller cannot queue a flight", function()
+test("with no known flight points the closest is the departure but nothing can be queued", function()
     local h = harness()
-    for _, node in ipairs(h.preview.nodes) do node.learned = false end
+    for _, node in ipairs(h.preview.nodes) do node.learned, node.locked = false, true end
     h.ns.Refresh()
-    equal(h.ns.origin, nil)
+    equal(h.ns.origin.id, 10)
     h.ns.Queue(h.preview.nodes[2])
     equal(h.ns.db.queue, nil)
+    assert(h:said("Discover that flight point"))
     equal(#h.takes, 0)
+end)
+
+test("an undiscovered closest flight master is the departure and is learned on arrival", function()
+    local h = harness()
+    h.preview.nodes[1].learned, h.preview.nodes[1].locked = false, true
+    local queue = h:queue()
+    equal(queue.sourceID, 10)
+    equal(h.ns.db.learned[10], nil)
+    h:event("TAXIMAP_OPENED")
+    h:advance(0.1)
+    equal(#h.takes, 1)
+    equal(h.ns.db.learned[10], true)
+end)
+
+test("a saved queue from an undiscovered departure survives reload", function()
+    local h = harness({ db = { observed = { [20] = true }, queue = { sourceID = 10, destinationID = 20,
+        mapID = 1415, sourceName = "Origin", destinationName = "Destination" } } })
+    equal(h.ns.db.learned[10], nil)
+    equal(h.ns.db.queue.sourceID, 10)
+    equal(h.ns.db.queue.destinationID, 20)
 end)
 
 test("an old saved queue for unconfirmed endpoints is cleared on reload", function()
@@ -614,7 +635,7 @@ test("all-known remote flags cannot restore a polluted queue or unlock points", 
     } })
     h:useRemotePreview(nil)
     equal(h.ns.db.queue, nil)
-    equal(h.ns.origin, nil)
+    equal(h.ns.origin.id, 10)
     equal(h.ns.db.lastDiagnostics.known, 0)
     equal(h.ns.db.lastDiagnostics.total, 3)
     for _, node in ipairs(h.ns.preview.nodes) do

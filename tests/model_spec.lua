@@ -400,16 +400,18 @@ test("invalid snapshots do not damage existing saved data", function()
     equal(db.queue.destinationID, 20)
 end)
 
-test("nearest departure excludes unknown and locked points", function()
+test("nearest departure includes undiscovered points but not transitions", function()
     local player = { instanceID = 0, worldX = 0, worldY = 0 }
     local unknown = { id = 1, instanceID = 0, worldX = 0, worldY = 0 }
     local locked = { id = 2, instanceID = 0, worldX = 1, worldY = 0, learned = true, locked = true }
     local known = { id = 3, instanceID = 0, worldX = 2, worldY = 0, learned = true }
-    equal(M.FindNearest({ unknown, locked, known }, player, 2), known)
-    equal(M.FindNearest({ unknown, locked }, player, 2), nil)
+    local transition = { id = 4, instanceID = 0, worldX = 0, worldY = 0, learned = true, transition = true }
+    equal(M.FindNearest({ known, locked, unknown, transition }, player, 2), unknown)
+    equal(M.FindNearest({ known, locked }, player, 2), locked)
+    equal(M.FindNearest({ transition }, player, 2), nil)
 end)
 
-test("planning requires two learned and selectable flight points", function()
+test("planning requires a known destination but accepts an undiscovered departure", function()
     local source, destination = { id = 10, learned = true }, { id = 20, learned = true }
     equal(M.CanPlan(source, destination), true)
     for _, field in ipairs({ "learned", "locked", "transition" }) do
@@ -417,12 +419,13 @@ test("planning requires two learned and selectable flight points", function()
         if field == "learned" then blocked.learned = false else blocked[field] = true end
         equal(M.CanPlan(source, blocked), false)
         blocked.id = 10
-        equal(M.CanPlan(blocked, destination), false)
+        equal(M.CanPlan(blocked, destination), field ~= "transition")
     end
+    equal(M.CanPlan({ id = 10 }, destination), true)
     equal(M.CanPlan(nil, destination), false)
+    equal(M.CanPlan({ name = "No ID" }, destination), false)
     equal(M.CanPlan(source, nil), false)
     equal(M.CanPlan(source, source), false)
-    equal(M.CanPlan({ id = 10 }, destination), false)
     equal(M.CanPlan(source, { id = 20 }), false)
 end)
 

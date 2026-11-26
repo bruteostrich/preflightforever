@@ -284,7 +284,7 @@ test("unavailable preview shows a useful state and disables departure", function
     h.reason = "Move outdoors to locate your flight master."
     h:render()
     assert(h:hasText(h.reason))
-    assert(h:hasText("Closest known flight master unavailable"))
+    assert(h:hasText("Closest flight master unavailable"))
     equal(h:button("Depart now"):IsEnabled(), false)
     equal(h:button("Clear queue"):IsEnabled(), false)
     equal(#h:rows(), 0)
@@ -297,20 +297,22 @@ test("missing discovery data leaves points red and explains how to refresh it", 
     h:render()
     equal(#h:pins(), 3)
     equal(#h:rows(), 0)
-    equal(h.ns.origin, nil)
+    -- The closest point is still the departure (gold); nothing else is selectable.
+    equal(h.ns.origin, h.ns.preview.nodes[1])
     for _, pin in ipairs(h:pins()) do
         equal(pin:IsEnabled(), false)
         equal(pin.motionWhileDisabled, true)
+        local isOrigin = pin.node == h.ns.origin
         near(pin.icon.vertexColor[1], 1)
-        near(pin.icon.vertexColor[2], 0.18)
-        near(pin.icon.vertexColor[3], 0.16)
+        near(pin.icon.vertexColor[2], isOrigin and 0.78 or 0.18)
+        near(pin.icon.vertexColor[3], isOrigin and 0.34 or 0.16)
         h:click(pin)
         pin.scripts.OnClick(pin)
     end
     equal(#h.queued, 0)
     equal(h.ns.db.queue, nil)
     assert(h:hasText("Open a flight master's map to refresh unavailable discovery data."))
-    assert(h:hasText("Flight discovery data is unavailable"))
+    assert(h:hasText("Closest: Origin (undiscovered)  ~1 yd"))
     assert(h:hasText("EASTERN KINGDOMS"))
 end)
 
@@ -353,15 +355,14 @@ test("an API-reported all-unknown map does not claim synchronization is required
     for _, node in ipairs(h.ns.preview.nodes) do node.learned, node.locked = false, true end
     h:render()
     equal(#h:rows(), 0)
-    equal(h.ns.origin, nil)
-    assert(h:hasText("No known flight master is available on this map"))
+    equal(h.ns.origin, h.ns.preview.nodes[1])
+    assert(h:hasText("Closest: Origin (undiscovered)  ~1 yd"))
     assert(h:hasText("No known destinations available here."))
-    assert(not h:hasText("Flight discovery data is unavailable"))
     assert(not h:hasText("Open a flight master's map to refresh unavailable discovery data."))
     for _, pin in ipairs(h:pins()) do
         equal(pin:IsEnabled(), false)
         near(pin.icon.vertexColor[1], 1)
-        near(pin.icon.vertexColor[2], 0.18)
+        near(pin.icon.vertexColor[2], pin.node == h.ns.origin and 0.78 or 0.18)
     end
 end)
 
@@ -984,6 +985,32 @@ test("player arrow falls back to the minimap arrow without the world map atlas",
     h.facing = 1
     h:preview()
     near(arrow.rotation, 1)
+end)
+
+test("an undiscovered closest flight point is the departure", function()
+    local h = harness()
+    h:preview()
+    local origin = h.ns.preview.nodes[1]
+    origin.learned, origin.locked, h.ns.db.learned[10] = false, true, nil
+    h.ns.origin, h.ns.distance = h.ns.Model.FindNearest(h.ns.preview.nodes, h.ns.preview.player, 2)
+    equal(h.ns.origin, origin)
+    h:render()
+    assert(h:hasText("Closest: Origin (undiscovered)  ~" .. math.floor(h.ns.distance + 0.5) .. " yd"))
+    local pin = h:one(function(item) return item.kind == "Button" and item.node == origin and item.icon end)
+    pin.scripts.OnEnter(pin)
+    equal(h.details.time:GetText(), "Closest flight master (undiscovered)")
+    assert(h:footerHas("Flights leave from here."))
+    pin.scripts.OnLeave(pin)
+    -- The real estimator must draw arrows from the undiscovered departure.
+    h.ns.RouteEdges = { 10, 20, 500 }
+    assert(loadfile("Routes.lua"))("PreflightForever", h.ns)
+    local row = h:rows()[1]
+    row.scripts.OnEnter(row)
+    assert(#h:routeLines() > 0)
+    assert(h:footerHas("Estimated route: Origin > Centerville"))
+    row.scripts.OnLeave(row)
+    h:click(row)
+    equal(h.ns.db.queue.sourceID, 10)
 end)
 
 print(string.format("%d UI smoke tests passed", passed))

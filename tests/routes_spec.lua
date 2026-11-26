@@ -54,11 +54,19 @@ test("unknown intermediate point cannot be used", function()
     equal(Routes.Estimate(preview, 7, 12), nil)
 end)
 
-test("unknown or locked endpoints cannot be used", function()
+test("an undiscovered departure routes through known points only", function()
+    local preview = fixture({ 7, 6, 2, 12 })
+    preview.nodes[1].learned, preview.nodes[1].locked = false, true
+    equal(assert(Routes.Estimate(preview, 7, 12)).key, "7:6:2:12")
+    preview.nodes[2].learned = false
+    equal(Routes.Estimate(preview, 7, 12), nil)
+end)
+
+test("unknown or locked destinations cannot be used", function()
     local preview = fixture({ 2, 4 })
-    preview.nodes[1].learned = false
+    preview.nodes[2].learned = false
     equal(Routes.Estimate(preview, 2, 4), nil)
-    preview.nodes[1].learned = true
+    preview.nodes[2].learned = true
     preview.nodes[2].locked = true
     equal(Routes.Estimate(preview, 2, 4), nil)
 end)

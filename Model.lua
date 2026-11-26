@@ -70,6 +70,8 @@ end
 
 -- Compare world-space distances. Normalized map positions are not comparable
 -- across maps, and even one map can have differently scaled horizontal axes.
+-- Undiscovered points count: talking to that flight master discovers it, and
+-- the flight can leave from there on the same visit.
 function Model.FindNearest(nodes, player, faction)
     if type(nodes) ~= "table" or type(player) ~= "table"
         or not finite(player.instanceID) or not finite(player.worldX)
@@ -79,8 +81,7 @@ function Model.FindNearest(nodes, player, faction)
 
     local nearest, nearestSquared
     for _, node in ipairs(nodes) do
-        if type(node) == "table" and identifier(node.id) and node.learned == true
-            and not node.locked and not node.transition
+        if type(node) == "table" and identifier(node.id) and not node.transition
             and (node.faction == nil or node.faction == 0 or node.faction == faction)
             and node.instanceID == player.instanceID
             and finite(node.worldX) and finite(node.worldY) then
@@ -101,11 +102,11 @@ function Model.FindNearest(nodes, player, faction)
 end
 
 -- The adapter resolves verified discovery from native observations/imports.
--- Planning accepts its effective known status; departure is checked live.
+-- Destinations must be known; the departure may be undiscovered, since it is
+-- learned on arrival. Departure is checked live at the flight master.
 function Model.CanPlan(source, destination)
-    if type(source) ~= "table" or not identifier(source.id)
-        or source.learned ~= true or source.locked then
-        return false, "No known departure point is available here."
+    if type(source) ~= "table" or not identifier(source.id) then
+        return false, "No departure flight master is available here."
     end
     if type(destination) ~= "table" or not identifier(destination.id)
         or destination.learned ~= true or destination.locked then

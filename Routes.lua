@@ -10,9 +10,12 @@ local function id(value)
     return finite(value) and value > 0 and value == math.floor(value)
 end
 
-local function point(node, faction, instanceID)
-    if type(node) ~= "table" or not id(node.id) or node.learned ~= true
-        or node.locked or node.transition or node.special then return nil end
+-- The departure may be undiscovered (talking to its flight master learns it);
+-- every other stop must already be known.
+local function point(node, faction, instanceID, departure)
+    if type(node) ~= "table" or not id(node.id)
+        or (not departure and (node.learned ~= true or node.locked))
+        or node.transition or node.special then return nil end
     if node.faction ~= nil and node.faction ~= 0 and node.faction ~= faction then return nil end
     if not finite(node.x) or not finite(node.y)
         or node.x < 0 or node.x > 1 or node.y < 0 or node.y > 1 then return nil end
@@ -43,7 +46,7 @@ function Routes.Estimate(preview, sourceID, destinationID)
             if seen[node.id] then
                 points[node.id] = nil
             else
-                points[node.id] = point(node, preview.faction, instanceID)
+                points[node.id] = point(node, preview.faction, instanceID, node.id == sourceID)
                 seen[node.id] = true
             end
         end

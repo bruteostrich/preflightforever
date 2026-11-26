@@ -55,10 +55,15 @@ local function savePosition(frame, key)
     ns.db[key] = { x = x - px * ratio, y = y - py * ratio }
 end
 
+local function originNote(node)
+    if node.learned == true and not node.locked then return "" end
+    return node.unverified and " (unverified)" or " (undiscovered)"
+end
+
 local function nodeStatus(node)
+    if ns.origin and node.id == ns.origin.id then return "Closest flight master" .. originNote(node), gold end
     if node.unverified then return "Unverified flight point", red end
     if node.learned ~= true or node.locked then return "Unknown flight point", red end
-    if ns.origin and node.id == ns.origin.id then return "Closest known flight master", gold end
     local map = ns.preview and ns.db.maps[ns.preview.mapID]
     local origins = type(map) == "table" and map.origins
     local origin = type(origins) == "table" and ns.origin and origins[ns.origin.id]
@@ -182,6 +187,9 @@ local function showNodeDetails(self)
         end
         notes[#notes + 1] = "Click to queue from " .. ns.origin.name .. "."
         statusText:SetText(table.concat(notes, "  |  "))
+    elseif ns.origin and node.id == ns.origin.id then
+        details.route:SetText((node.learned == true and not node.locked) and "Hover a destination to preview a flight from here."
+            or "Flights leave from here. Talking to this flight master discovers it if you haven't already.")
     elseif node.learned ~= true or node.locked then
         details.route:SetText(node.unverified
             and "The remote API cannot confirm this point. Open a flight master's normal map to verify your known destinations."
@@ -189,7 +197,7 @@ local function showNodeDetails(self)
         details.route:SetTextColor(1, 0.35, 0.3)
     else
         details.route:SetText(ns.origin and "Hover a destination to preview a flight from here."
-            or "No known departure point is available here.")
+            or "No departure flight master is available here.")
     end
 end
 
@@ -383,7 +391,7 @@ function UI.Render(preview, origin, distance, reason)
         for _, tile in ipairs(tiles) do tile:Hide() end
         mapBackground:Hide()
         mapTitle:SetText("FLIGHT PLANNER")
-        originText:SetText("Closest known flight master unavailable")
+        originText:SetText("Closest flight master unavailable")
         statusText:SetText(reason or "Move outdoors and open the planner again.")
         emptyText:SetText(reason or "Flight data is unavailable here.")
         emptyText:Show()
@@ -393,8 +401,9 @@ function UI.Render(preview, origin, distance, reason)
         return
     end
     mapTitle:SetText(string.upper(preview.mapName or "Flight planner"))
-    originText:SetText(origin and ("Closest known: " .. origin.name .. (distance and ("  ~" .. math.floor(distance + 0.5) .. " yd") or ""))
-        or (preview.needsFlightSync and "Flight discovery data is unavailable" or "No known flight master is available on this map"))
+    originText:SetText(origin and ("Closest: " .. origin.name .. originNote(origin)
+        .. (distance and ("  ~" .. math.floor(distance + 0.5) .. " yd") or ""))
+        or "No flight master is available on this map")
     local art, artReason = drawMap(preview.mapID)
     hasMapArt = art
     emptyText:SetText(art and "No flight points are available yet. Visit a flight master to record its map." or artReason or "Map art unavailable; choose a destination from the list.")

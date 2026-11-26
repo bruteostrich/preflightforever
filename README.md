@@ -2,7 +2,7 @@
 
 A standalone flight planner for **World of Warcraft: Forever 1.60.1** (interface **16001**).
 
-Click the floating gryphon button anywhere outdoors to see a continent map and your closest known faction-compatible flight point. Hover a known destination for route arrows on the map and live details at the bottom of the planner; click its pin or name to queue a flight. When you visit the selected flight master and open its taxi map, Preflight Forever checks the live destination, route, and fare, then starts the flight. A single, unambiguous flight-service gossip option is selected automatically when automatic departure is enabled.
+Click the floating gryphon button anywhere outdoors to see a continent map and your closest faction-compatible flight point, which is where your flight leaves from. Hover a known destination for route arrows on the map and live details at the bottom of the planner; click its pin or name to queue a flight. When you visit the selected flight master and open its taxi map, Preflight Forever checks the live destination, route, and fare, then starts the flight. A single, unambiguous flight-service gossip option is selected automatically when automatic departure is enabled.
 
 ## Install
 
@@ -18,7 +18,7 @@ Bundled route data matches client build **1.60.1.71091**. Fully restart the game
 ## Use
 
 - **Left-click** the floating button to open or close the planner; **drag** it to move it.
-- The top of the map names the closest **known** flight point and its approximate straight-line distance. This is the flight-point location name, not necessarily the NPC's personal name.
+- The top of the map names the closest flight point and its approximate straight-line distance. It counts flight points you haven't discovered yet and marks them "(undiscovered)": talking to that flight master discovers it, so you can fly out on the same visit. This is the flight-point location name, not necessarily the NPC's personal name.
 - Only verified known destinations appear in the list. Unknown and unverified points stay on the map in **red** and cannot be selected; hover them to see their status in the bottom panel.
 - Hover a map pin or destination row to update the bottom panel with its name, status, route, and estimated flight time. Route arrows stay visible on the map without a destination tooltip covering them. Bundled flight connections provide an estimated route before visiting a flight master. A current recorded native route takes priority afterward.
 - Hover details and arrows clear when you leave the point, close the planner, or filter out the hovered destination. The floating gryphon button retains its help tooltip.
@@ -40,7 +40,7 @@ Bundled route data matches client build **1.60.1.71091**. Fully restart the game
 
 ## What the preview can know
 
-The preview uses the client's remote API for flight-point locations. Forever can incorrectly report every point as discovered, so its discovery flags alone no longer unlock destinations. **Gold** marks the closest verified departure and selected destination, **green** marks verified known destinations, and **red** marks unknown or unverified points. Unverified does not mean the character has never discovered the point; it means Preflight Forever lacks reliable evidence.
+The preview uses the client's remote API for flight-point locations. Forever can incorrectly report every point as discovered, so its discovery flags alone no longer unlock destinations. **Gold** marks the closest flight point (your departure) and the selected destination, **green** marks verified known destinations, and **red** marks unknown or unverified points. Unverified does not mean the character has never discovered the point; it means Preflight Forever lacks reliable evidence.
 
 When you open a flight master's normal map, its actual node states correct both false positives and false negatives in the remote data. These positive and negative corrections persist per character and take precedence over later remote flags. A subsequent flight-master visit can change them again. Nodes omitted from a snapshot are left unchanged. Saved observations from older versions are preserved on upgrade.
 

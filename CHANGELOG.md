@@ -1,5 +1,10 @@
 # Preflight Forever changelog
 
+## 0.3.5
+
+- Your departure is now the closest flight master even if you haven't discovered it yet. The planner labels it "(undiscovered)" and draws route arrows and flight times from it. Talking to that flight master discovers it and takes your queued flight.
+- A flight queued from an undiscovered flight master is kept after /reload.
+
 ## 0.3.4
 
 - The planner map now shows you as the world map's player arrow, pointing the way you face, instead of a blue square.
