@@ -2,7 +2,7 @@ local _, ns = ...
 local UI = {}
 ns.UI = UI
 local window, launcher, canvas, list, scroll, search, originText, queueText, statusText
-local autoCheck, depart, cancel, mapTitle, emptyText, playerPin, emptyListText, mapBackground
+local autoCheck, depart, cancel, mapTitle, emptyText, playerPin, playerArrow, emptyListText, mapBackground
 local details
 local pins, rows, tiles, routeLines = {}, {}, {}, {}
 local hoveredWidget, hoveredID, hasMapArt
@@ -191,6 +191,11 @@ local function showNodeDetails(self)
         details.route:SetText(ns.origin and "Hover a destination to preview a flight from here."
             or "No known departure point is available here.")
     end
+end
+
+local function turnPlayerArrow()
+    local facing = ns.API.Facing and ns.API.Facing()
+    if facing and playerArrow.SetRotation then playerArrow:SetRotation(facing) end
 end
 
 local function makePin()
@@ -447,6 +452,7 @@ function UI.Render(preview, origin, distance, reason)
         and player.x >= 0 and player.x <= 1 and player.y >= 0 and player.y <= 1 then
         playerPin:ClearAllPoints()
         playerPin:SetPoint("CENTER", canvas, "TOPLEFT", player.x * mapWidth, -player.y * mapHeight)
+        turnPlayerArrow()
         playerPin:Show()
     end
     if hoveredWidget then
@@ -554,12 +560,18 @@ function UI.Init()
     emptyText:SetPoint("CENTER")
     emptyText:SetWidth(490)
     emptyText:SetJustifyH("CENTER")
+    -- The world map's own player arrow, kept turned to the character's facing.
     playerPin = CreateFrame("Frame", nil, canvas)
-    playerPin:SetSize(12, 12)
+    playerPin:SetSize(24, 24)
     playerPin:SetFrameLevel(canvas:GetFrameLevel() + 8)
-    local marker = playerPin:CreateTexture(nil, "OVERLAY")
-    marker:SetAllPoints()
-    marker:SetColorTexture(0.25, 0.75, 1, 1)
+    playerArrow = playerPin:CreateTexture(nil, "OVERLAY")
+    playerArrow:SetAllPoints()
+    if C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo("UI-WorldMapArrow") then
+        playerArrow:SetAtlas("UI-WorldMapArrow")
+    else
+        playerArrow:SetTexture("Interface\\Minimap\\MinimapArrow")
+    end
+    playerPin:SetScript("OnUpdate", turnPlayerArrow)
     local destinations = label(window, 10, grey)
     destinations:SetPoint("TOPLEFT", 670, -105)
     destinations:SetText("DESTINATIONS")

@@ -50,6 +50,7 @@ function methods:SetTexture(value, horizontalWrap, verticalWrap, filter)
     self.textureAssignments = (self.textureAssignments or 0) + 1
 end
 function methods:SetAtlas(value) self.atlas = value end
+function methods:SetRotation(radians) self.rotation = radians end
 function methods:SetHorizTile(value) self.horizontalTile = value end
 function methods:SetVertTile(value) self.verticalTile = value end
 function methods:IsObjectLoaded() return self.loaded ~= false end
@@ -115,7 +116,8 @@ function methods:SetVerticalScroll(value) self.verticalScroll = value end
 function methods:SetOwner(owner, anchor) self.owner, self.anchor = owner, anchor end
 function methods:AddLine(text, ...) self.lines[#self.lines + 1] = { text, ... } end
 
-local function harness()
+local function harness(options)
+    options = options or {}
     local h = { widgets = {}, names = {}, messages = {}, queued = {}, refreshCount = 0, departCount = 0 }
     local function widget(kind, name, parent, template)
         local item = setmetatable({ kind = kind, objectName = name, parent = parent, template = template,
@@ -150,6 +152,9 @@ local function harness()
     h.layer = { layerWidth = 1000, layerHeight = 650, tileWidth = 256, tileHeight = 256 }
     h.textures = {}
     for i = 1, 12 do h.textures[i] = 1000 + i end
+    C_Texture = not options.noAtlas and { GetAtlasInfo = function(name)
+        if name == "UI-WorldMapArrow" then return { width = 32, height = 32 } end
+    end } or nil
     C_Map = {
         GetMapArtLayers = function() return h.layers or (h.layer and { h.layer } or nil) end,
         GetMapArtLayerTextures = function(_, index) return h.texturesByLayer and h.texturesByLayer[index] or h.textures end,
@@ -160,7 +165,8 @@ local function harness()
     h.context = { inCombat = false, onTaxi = false, dead = false, money = 500 }
     h.speedFactor, h.lookupCalls = 1, 0
     ns.API = { Context = function() return h.context end,
-        GetFlightSpeedFactor = function() return h.speedFactor end }
+        GetFlightSpeedFactor = function() return h.speedFactor end,
+        Facing = function() return h.facing end }
     ns.Timings = { Lookup = function(faction, mapID, sourceID, destinationID, route)
         h.lookupCalls = h.lookupCalls + 1
         h.lookupArgs = { faction, mapID, sourceID, destinationID, route }
@@ -944,6 +950,40 @@ test("loss of art or preview removes old route lines without leaving stale graph
     equal(#h:routeLines(), 0)
     equal(GameTooltip:IsShown(), false)
     h:idleFooter()
+end)
+
+test("player is the world map arrow, turned to the character's facing", function()
+    local h = harness()
+    local arrow = h:one(function(item) return item.atlas == "UI-WorldMapArrow" end)
+    local pin = arrow.parent
+    equal(arrow.colorTexture, nil)
+    equal(pin.scripts.OnUpdate ~= nil, true)
+    h.facing = math.pi / 2
+    h:preview()
+    equal(pin:IsShown(), true)
+    local point = pin.points[#pin.points]
+    equal(point[1], "CENTER")
+    near(point[4], 0.21 * point[2]:GetWidth())
+    near(point[5], -0.22 * point[2]:GetHeight())
+    near(arrow.rotation, math.pi / 2)
+    h.facing = 2
+    pin.scripts.OnUpdate(pin, 0.016)
+    near(arrow.rotation, 2)
+    h.facing = nil
+    pin.scripts.OnUpdate(pin, 0.016)
+    near(arrow.rotation, 2)
+    h.ns.preview = nil
+    h:render()
+    equal(pin:IsShown(), false)
+end)
+
+test("player arrow falls back to the minimap arrow without the world map atlas", function()
+    local h = harness({ noAtlas = true })
+    local arrow = h:one(function(item) return item.texture == "Interface\\Minimap\\MinimapArrow" end)
+    equal(arrow.atlas, nil)
+    h.facing = 1
+    h:preview()
+    near(arrow.rotation, 1)
 end)
 
 print(string.format("%d UI smoke tests passed", passed))

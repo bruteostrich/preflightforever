@@ -48,6 +48,7 @@ local function reset()
     GetMoney = function() return 500 end
     IsShiftKeyDown = function() return false end
     IsPlayerSpell = function() return false end
+    GetPlayerFacing = function() return 1.25 end
     GetTaxiMapID = function() return 1463 end
     NumTaxiNodes = function() return #names end
     TaxiNodeName = function(slot) return names[slot] end
@@ -514,6 +515,18 @@ test("context distinguishes ordinary nil false from unavailable flags", function
     equal(A.Context().onTaxi, nil)
     UnitOnTaxi = function() return secret end
     equal(A.Context().onTaxi, nil)
+end)
+
+test("facing is a finite readable angle or nil", function()
+    equal(A.Facing(), 1.25)
+    for _, value in ipairs({ secret, 0 / 0, math.huge, "north" }) do
+        GetPlayerFacing = function() return value end
+        equal(A.Facing(), nil)
+    end
+    GetPlayerFacing = function() error("unavailable") end
+    equal(A.Facing(), nil)
+    GetPlayerFacing = nil
+    equal(A.Facing(), nil)
 end)
 
 test("take submits the current slot and does not imply flight started", function()

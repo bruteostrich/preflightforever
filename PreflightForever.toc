@@ -2,7 +2,7 @@
 ## Title: Preflight Forever
 ## Notes: Plan a flight anywhere, then depart when you visit the selected flight master.
 ## Author: bruteostrich
-## Version: 0.3.3
+## Version: 0.3.4
 ## X-License: MIT
 ## OptionalDeps: ForeverDungeonJournal
 ## SavedVariablesPerCharacter: PreflightDB

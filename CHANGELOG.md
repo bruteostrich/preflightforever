@@ -1,5 +1,9 @@
 # Preflight Forever changelog
 
+## 0.3.4
+
+- The planner map now shows you as the world map's player arrow, pointing the way you face, instead of a blue square.
+
 ## 0.3.3
 
 First release on CurseForge.

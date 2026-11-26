@@ -112,6 +112,11 @@ local function Player(mapID, bestMapID)
     end
 end
 
+-- Radians counterclockwise from north, or nil where the client withholds it.
+function A.Facing()
+    return Number(Call(GetPlayerFacing))
+end
+
 function A.Faction()
     local faction = Call(UnitFactionGroup, "player")
     if faction == "Horde" then return 1 end
