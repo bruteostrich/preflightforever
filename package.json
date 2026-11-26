@@ -1,7 +1,7 @@
 {
   "name": "preflightforever-wow-addon",
   "private": true,
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Development checks for the Preflight Forever WoW addon",
   "scripts": {
     "test": "node tests/run.cjs"

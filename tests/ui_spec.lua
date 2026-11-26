@@ -1013,4 +1013,48 @@ test("an undiscovered closest flight point is the departure", function()
     equal(h.ns.db.queue.sourceID, 10)
 end)
 
+test("the button counts down a flight over its dimmed icon", function()
+    local h = harness()
+    local remaining
+    h.ns.Tracker = { Remaining = function() return remaining end }
+    local countdown = h.launcher.countdown
+    equal(countdown:IsShown(), false)
+    h.launcher.scripts.OnUpdate(h.launcher, 0.1)
+    equal(countdown:IsShown(), false)
+    remaining = 83.2
+    h.launcher.scripts.OnUpdate(h.launcher, 0.1)
+    equal(countdown:IsShown(), true)
+    equal(countdown:GetText(), "1:24")
+    near(h.launcher.icon.vertexColor[1], 0.45)
+    remaining = 0
+    h.launcher.scripts.OnUpdate(h.launcher, 0.1)
+    equal(countdown:GetText(), "0:00")
+    remaining = nil
+    h.launcher.scripts.OnUpdate(h.launcher, 0.1)
+    equal(countdown:IsShown(), false)
+    near(h.launcher.icon.vertexColor[1], 1)
+end)
+
+test("the button shows a wind rider for Horde and a gryphon otherwise", function()
+    local gryphon, wyvern = "Interface\\Icons\\Ability_Mount_Gryphon_01", "Interface\\Icons\\Ability_Mount_Wyvern_01"
+    local h = harness()
+    equal(h.launcher.icon.texture, gryphon)
+    h:preview()
+    equal(h.launcher.icon.texture, gryphon)
+    h.ns.preview.faction = 1
+    h:render()
+    equal(h.launcher.icon.texture, wyvern)
+    GetFileIDFromPath = function() return nil end
+    h:render()
+    equal(h.launcher.icon.texture, gryphon)
+    GetFileIDFromPath = nil
+    h.ns.preview = nil
+    h.ns.API.Faction = function() return 1 end
+    h:render()
+    equal(h.launcher.icon.texture, wyvern)
+    h.ns.API.Faction = function() return 2 end
+    h:render()
+    equal(h.launcher.icon.texture, gryphon)
+end)
+
 print(string.format("%d UI smoke tests passed", passed))

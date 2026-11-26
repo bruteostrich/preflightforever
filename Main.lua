@@ -2,7 +2,7 @@ local addonName, ns = ...
 local M, A = ns.Model, ns.API
 local events = CreateFrame("Frame")
 ns.events = events
-ns.version = "0.3.5"
+ns.version = "0.3.6"
 local session = 0
 
 function ns.Print(message)

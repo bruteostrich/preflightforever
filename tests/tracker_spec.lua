@@ -256,6 +256,49 @@ test("initialization installs a secure hook only once", function()
     equal(#h.hooks, 1)
 end)
 
+test("countdown starts at takeoff from this route's recorded time and ends on landing", function()
+    local h = harness()
+    h:take()
+    h:fly(100)
+    near(h:duration(), 100)
+    h.factor = 2
+    h:take()
+    equal(h.T.Remaining(), nil)
+    h.context.onTaxi = true
+    h:advance(0.2)
+    near(h.T.Remaining(), 50)
+    h:advance(20)
+    near(h.T.Remaining(), 30)
+    h:advance(40)
+    equal(h.T.Remaining(), 0)
+    h.context.onTaxi = false
+    h:advance(0.2)
+    equal(h.T.Remaining(), nil)
+end)
+
+test("countdown falls back to the InFlight estimate and is absent without any time", function()
+    local h = harness()
+    h.ns.API.Faction = function() return 1 end
+    h.estimate = 90
+    h.ns.Timings = { Lookup = function(faction, mapID, sourceID, destinationID, route)
+        h.lookup = { faction, mapID, sourceID, destinationID, route.key }
+        return h.estimate
+    end }
+    h:take()
+    h.context.onTaxi = true
+    h:advance(0.2)
+    near(h.T.Remaining(), 90)
+    equal(table.concat(h.lookup, ","), "1,1415,10,20,10:20")
+    h.context.onTaxi = false
+    h:advance(0.2)
+    equal(h.T.Remaining(), nil)
+    h.estimate = nil
+    h:take()
+    h.context.onTaxi = true
+    h:advance(0.2)
+    equal(h.T.Remaining(), nil)
+end)
+
 for _, entry in ipairs(tests) do
     local ok, reason = pcall(entry[2])
     assert(ok, entry[1] .. ": " .. tostring(reason))

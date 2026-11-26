@@ -73,6 +73,27 @@ local function poll(token)
     C_Timer.After(0.2, function() poll(token) end)
 end
 
+-- Expected time in the air at the current speed, chosen like the planner's
+-- preview: this exact route's recorded time first, then the InFlight estimate.
+local function expectedSeconds(live, node, route, factor)
+    local recorded = M.GetRoute(db, live.mapID, live.sourceID, node.id)
+    local seconds = recorded and recorded.key == route.key and recorded.duration or nil
+    if not seconds and type(ns.Timings) == "table" and type(ns.Timings.Lookup) == "function" then
+        local faction = type(A.Faction) == "function" and A.Faction() or nil
+        local ok, value = pcall(ns.Timings.Lookup, faction, live.mapID, live.sourceID, node.id, route)
+        if ok then seconds = value end
+    end
+    if finite(seconds) and seconds > 0 then return seconds / factor end
+end
+
+-- Seconds left on the current flight, or nil when no timed flight is in the
+-- air: not yet airborne, already landed, or no time to count down from.
+function T.Remaining()
+    local flight, now = active, clock()
+    if not flight or not flight.expected or not flight.startedAt or not now then return nil end
+    return math.max(0, flight.expected - (now - flight.startedAt))
+end
+
 function T.BeforeTake(live, slot)
     if type(db) ~= "table" or type(live) ~= "table" or type(live.nodes) ~= "table"
         or not finite(slot) or slot < 1 or slot ~= math.floor(slot)
@@ -101,7 +122,8 @@ function T.BeforeTake(live, slot)
     T.CancelPending()
     active = { mapID = live.mapID, sourceID = live.sourceID, destinationID = node.id,
         key = route.key, requestedAt = now, speedFactor = factor,
-        instanceID = last.instanceID, worldX = last.worldX, worldY = last.worldY }
+        instanceID = last.instanceID, worldX = last.worldX, worldY = last.worldY,
+        expected = expectedSeconds(live, node, route, factor) }
     local token = generation
     C_Timer.After(0.2, function() poll(token) end)
     return true

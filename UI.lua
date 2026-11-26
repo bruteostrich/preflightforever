@@ -201,6 +201,40 @@ local function showNodeDetails(self)
     end
 end
 
+local gryphonIcon = "Interface\\Icons\\Ability_Mount_Gryphon_01"
+local wyvernIcon = "Interface\\Icons\\Ability_Mount_Wyvern_01"
+
+-- Horde flies wind riders; keep the gryphon if this client lacks that icon.
+local function updateLauncherIcon(faction)
+    faction = faction or (ns.API.Faction and ns.API.Faction())
+    local path = gryphonIcon
+    if faction == 1 then
+        local ok, fileID = true, true
+        if type(GetFileIDFromPath) == "function" then ok, fileID = pcall(GetFileIDFromPath, wyvernIcon) end
+        if ok and fileID then path = wyvernIcon end
+    end
+    if launcher.iconPath ~= path then
+        launcher.iconPath = path
+        launcher.icon:SetTexture(path)
+    end
+end
+
+-- While in the air, the time left is written over the dimmed button icon.
+local function updateCountdown()
+    local remaining = ns.Tracker and ns.Tracker.Remaining and ns.Tracker.Remaining()
+    if remaining then
+        local seconds = math.ceil(remaining)
+        launcher.countdown:SetText(string.format("%d:%02d", math.floor(seconds / 60), seconds % 60))
+        if not launcher.countdown:IsShown() then
+            launcher.countdown:Show()
+            launcher.icon:SetVertexColor(0.45, 0.45, 0.45)
+        end
+    elseif launcher.countdown:IsShown() then
+        launcher.countdown:Hide()
+        launcher.icon:SetVertexColor(1, 1, 1)
+    end
+end
+
 local function turnPlayerArrow()
     local facing = ns.API.Facing and ns.API.Facing()
     if facing and playerArrow.SetRotation then playerArrow:SetRotation(facing) end
@@ -366,6 +400,7 @@ end
 
 function UI.Render(preview, origin, distance, reason)
     if not window then return end
+    updateLauncherIcon(preview and preview.faction)
     defaultStatus = preview and preview.warning or reason
         or "Gold: departure   Green: known   Red: unknown or unverified"
     if not hoveredWidget then resetDetails() end
@@ -495,13 +530,22 @@ function UI.Init()
     launcher.icon = launcher:CreateTexture(nil, "ARTWORK")
     launcher.icon:SetPoint("TOPLEFT", 4, -4)
     launcher.icon:SetPoint("BOTTOMRIGHT", -4, 4)
-    launcher.icon:SetTexture("Interface\\Icons\\Ability_Mount_Gryphon_01")
     launcher.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    updateLauncherIcon()
     launcher:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     launcher.queued = label(launcher, 20, gold)
     launcher.queued:SetPoint("TOPRIGHT", 3, 6)
     launcher.queued:SetText("*")
     launcher.queued:Hide()
+    launcher.countdown = label(launcher, 15, { 1, 1, 1 })
+    launcher.countdown:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+    launcher.countdown:SetPoint("CENTER", 0, 0)
+    launcher.countdown:Hide()
+    local sinceCountdown = 0
+    launcher:SetScript("OnUpdate", function(_, delta)
+        sinceCountdown = sinceCountdown + delta
+        if sinceCountdown >= 0.1 then sinceCountdown = 0; updateCountdown() end
+    end)
     launcher:SetScript("OnMouseDown", function(self) self.dragged = false end)
     launcher:SetScript("OnDragStart", function(self) self.dragged = true; self:StartMoving() end)
     launcher:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); savePosition(self, "buttonPosition") end)

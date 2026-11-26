@@ -1,5 +1,10 @@
 # Preflight Forever changelog
 
+## 0.3.6
+
+- During a flight, the floating button counts down the time left, using your own recorded time for that route or the InFlight estimate.
+- Horde characters see a wind rider on the floating button instead of a gryphon.
+
 ## 0.3.5
 
 - Your departure is now the closest flight master even if you haven't discovered it yet. The planner labels it "(undiscovered)" and draws route arrows and flight times from it. Talking to that flight master discovers it and takes your queued flight.
